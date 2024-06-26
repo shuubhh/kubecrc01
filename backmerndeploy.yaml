@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mern-k8s-back
+  labels:
+    app: mern-k8s
+    component: back
+spec:
+  replicas: 2
+  selector: 
+    matchLabels:
+      component: back
+  template:
+    metadata: 
+      labels:
+        app: mern-k8s
+        component: back
+    spec:
+      containers:
+        - name: mern-k8s-back
+          image: shvbh/mern-k8s-back
+          ports: 
+            - containerPort: 5000
+          env: 
+            - name: PORT
+              value: "5000"
+            - name: CONN_STR
+              valueFrom:
+                configMapKeyRef:
+                  key: connectionString.standardSrv
+                  name: configmap-mongo

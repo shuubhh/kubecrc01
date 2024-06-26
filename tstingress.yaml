@@ -1,0 +1,39 @@
+apiVersion: networking.k8s.io/v1
+kind: IngressClass
+metadata:
+  annotations:
+    ingressclass.kubernetes.io/is-default-class: "true"
+  name: gce
+spec:
+  controller: k8s.io/ingress-gce
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mern-k8s-ingress
+  annotations:
+    kubernetes.io/ingress.class: "gce"
+    kubernetes.io/ingress.global-static-ip-name: "lb-ip"
+spec:
+  rules:
+    - host: api.googlecloudcorner.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: mern-k8s-back
+                port:
+                  number: 81
+    - host: "googlecloudcorner.com"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: mern-k8s-front
+                port:
+                  number: 80

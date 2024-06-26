@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mongodb
+  namespace: default
+spec:
+  serviceName: mongo
+  replicas: 4
+  selector:
+    matchLabels:
+      app: mongo
+  template:
+    metadata:
+      labels:
+        app: mongo
+    spec:
+      terminationGracePeriodSeconds: 30
+      containers:
+      - name: mongo
+        image: mongo:latest
+        command: ["/bin/sh"]
+        args: ["-c", "mongod --replSet=rs0 --bind_ip_all --port 27017"]
+        ports:
+          - name: mongo-port
+            containerPort: 27017
+        env:
+          - name: MONGO_INITDB_ROOT_USERNAME
+            valueFrom:
+              secretKeyRef:
+                key: mongo-root-username
+                name: mongodb-secret
+          - name: MONGO_INITDB_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: mongo-root-password
+                name: mongodb-secret
+        volumeMounts:
+          - name: mongo-volume
+            mountPath: /data/db
+  volumeClaimTemplates:
+    - metadata:
+        name: mongo-volume
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: do-block-storage-retain
+        volumeMode: Filesystem
+        resources:
+          requests:
+            storage: 10Gi
